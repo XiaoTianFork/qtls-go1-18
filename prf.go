@@ -14,6 +14,8 @@ import (
 	"errors"
 	"fmt"
 	"hash"
+
+	"github.com/xiaotianfork/qtls-go1-18/x509"
 )
 
 // Split a premaster secret in two as specified in RFC 4346, Section 5.
@@ -215,7 +217,7 @@ func (h finishedHash) serverSum(masterSecret []byte) []byte {
 
 // hashForClientCertificate returns the handshake messages so far, pre-hashed if
 // necessary, suitable for signing by a TLS client certificate.
-func (h finishedHash) hashForClientCertificate(sigType uint8, hashAlg crypto.Hash, masterSecret []byte) []byte {
+func (h finishedHash) hashForClientCertificate(sigType uint8, hashAlg x509.Hash, masterSecret []byte) []byte {
 	if (h.version >= VersionTLS12 || sigType == signatureEd25519) && h.buffer == nil {
 		panic("tls: handshake hash for a client certificate requested after discarding the handshake buffer")
 	}

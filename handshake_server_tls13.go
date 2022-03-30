@@ -15,6 +15,8 @@ import (
 	"io"
 	"sync/atomic"
 	"time"
+
+	"github.com/xiaotianfork/qtls-go1-18/x509"
 )
 
 // maxClientPSKIdentities is the number of client PSK identities the server will
@@ -363,7 +365,7 @@ func (hs *serverHandshakeStateTLS13) checkForResumption() error {
 // cloneHash uses the encoding.BinaryMarshaler and encoding.BinaryUnmarshaler
 // interfaces implemented by standard library hashes to clone the state of in
 // to a new instance of h. It returns nil if the operation fails.
-func cloneHash(in hash.Hash, h crypto.Hash) hash.Hash {
+func cloneHash(in hash.Hash, h x509.Hash) hash.Hash {
 	// Recreate the interface to avoid importing encoding.
 	type binaryMarshaler interface {
 		MarshalBinary() (data []byte, err error)
@@ -664,7 +666,7 @@ func (hs *serverHandshakeStateTLS13) sendServerCertificate() error {
 	signed := signedMessage(sigHash, serverSignatureContext, hs.transcript)
 	signOpts := crypto.SignerOpts(sigHash)
 	if sigType == signatureRSAPSS {
-		signOpts = &rsa.PSSOptions{SaltLength: rsa.PSSSaltLengthEqualsHash, Hash: sigHash}
+		signOpts = &rsa.PSSOptions{SaltLength: rsa.PSSSaltLengthEqualsHash, Hash: toCryptoHash(sigHash)}
 	}
 	sig, err := hs.cert.PrivateKey.(crypto.Signer).Sign(c.config.rand(), signed, signOpts)
 	if err != nil {
@@ -846,7 +848,7 @@ func (hs *serverHandshakeStateTLS13) readClientCertificate() error {
 		if err != nil {
 			return c.sendAlert(alertInternalError)
 		}
-		if sigType == signaturePKCS1v15 || sigHash == crypto.SHA1 {
+		if sigType == signaturePKCS1v15 || sigHash == x509.SHA1 {
 			c.sendAlert(alertIllegalParameter)
 			return errors.New("tls: client certificate used with invalid signature algorithm")
 		}

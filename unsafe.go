@@ -1,9 +1,12 @@
 package qtls
 
 import (
+	"crypto"
 	"crypto/tls"
 	"reflect"
 	"unsafe"
+
+	"github.com/xiaotianfork/qtls-go1-18/x509"
 )
 
 func init() {
@@ -13,15 +16,15 @@ func init() {
 	if !structsEqual(&tls.ClientSessionState{}, &clientSessionState{}) {
 		panic("qtls.ClientSessionState doesn't match")
 	}
-	if !structsEqual(&tls.CertificateRequestInfo{}, &certificateRequestInfo{}) {
+	if !structsEqual(&tls.CertificateRequestInfo{}, &CertificateRequestInfo{}) {
 		panic("qtls.CertificateRequestInfo doesn't match")
 	}
-	if !structsEqual(&tls.Config{}, &config{}) {
-		panic("qtls.Config doesn't match")
-	}
-	if !structsEqual(&tls.ClientHelloInfo{}, &clientHelloInfo{}) {
-		panic("qtls.ClientHelloInfo doesn't match")
-	}
+	//if !structsEqual(&tls.Config{}, &Config{}) {
+	//	panic("qtls.Config doesn't match")
+	//}
+	//if !structsEqual(&tls.ClientHelloInfo{}, &ClientHelloInfo{}) {
+	//	panic("qtls.ClientHelloInfo doesn't match")
+	//}
 }
 
 func toConnectionState(c connectionState) ConnectionState {
@@ -32,24 +35,12 @@ func toClientSessionState(s *clientSessionState) *ClientSessionState {
 	return (*ClientSessionState)(unsafe.Pointer(s))
 }
 
+func toCryptoHash(h x509.Hash) crypto.Hash {
+	return *(*crypto.Hash)(&h)
+}
+
 func fromClientSessionState(s *ClientSessionState) *clientSessionState {
 	return (*clientSessionState)(unsafe.Pointer(s))
-}
-
-func toCertificateRequestInfo(i *certificateRequestInfo) *CertificateRequestInfo {
-	return (*CertificateRequestInfo)(unsafe.Pointer(i))
-}
-
-func toConfig(c *config) *Config {
-	return (*Config)(unsafe.Pointer(c))
-}
-
-func fromConfig(c *Config) *config {
-	return (*config)(unsafe.Pointer(c))
-}
-
-func toClientHelloInfo(chi *clientHelloInfo) *ClientHelloInfo {
-	return (*ClientHelloInfo)(unsafe.Pointer(chi))
 }
 
 func structsEqual(a, b interface{}) bool {

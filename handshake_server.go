@@ -11,13 +11,15 @@ import (
 	"crypto/ed25519"
 	"crypto/rsa"
 	"crypto/subtle"
-	"crypto/x509"
 	"errors"
 	"fmt"
+	"github.com/xiaotianfork/qtls-go1-18/sm2"
 	"hash"
 	"io"
 	"sync/atomic"
 	"time"
+
+	"github.com/xiaotianfork/qtls-go1-18/x509"
 )
 
 // serverHandshakeState contains details of a server handshake in progress.
@@ -147,7 +149,7 @@ func (c *Conn) readClientHello(ctx context.Context) (*clientHelloMsg, error) {
 		return nil, unexpectedMessageError(clientHello, msg)
 	}
 
-	var configForClient *config
+	var configForClient *Config
 	originalConfig := c.config
 	if c.config.GetConfigForClient != nil {
 		chi := newClientHelloInfo(ctx, c, clientHello)
@@ -155,7 +157,7 @@ func (c *Conn) readClientHello(ctx context.Context) (*clientHelloMsg, error) {
 			c.sendAlert(alertInternalError)
 			return nil, err
 		} else if cfc != nil {
-			configForClient = fromConfig(cfc)
+			configForClient = cfc
 			c.config = configForClient
 		}
 	}
@@ -180,7 +182,7 @@ func (c *Conn) readClientHello(ctx context.Context) (*clientHelloMsg, error) {
 				}
 			}
 		}
-		// Make the config we're using allows us to use TLS 1.3.
+		// Make the Config we're using allows us to use TLS 1.3.
 		if c.config.maxSupportedVersion(roleServer) < VersionTLS13 {
 			c.sendAlert(alertInternalError)
 			return nil, errors.New("tls: MaxVersion prevents QUIC from using TLS 1.3")
@@ -335,7 +337,7 @@ func negotiateALPN(serverProtos, clientProtos []string) (string, error) {
 
 // supportsECDHE returns whether ECDHE key exchanges can be used with this
 // pre-TLS 1.3 client.
-func supportsECDHE(c *config, supportedCurves []CurveID, supportedPoints []uint8) bool {
+func supportsECDHE(c *Config, supportedCurves []CurveID, supportedPoints []uint8) bool {
 	supportsCurve := false
 	for _, curve := range supportedCurves {
 		if c.supportsCurve(curve) {
@@ -673,7 +675,7 @@ func (hs *serverHandshakeState) doFullHandshake() error {
 		}
 
 		var sigType uint8
-		var sigHash crypto.Hash
+		var sigHash x509.Hash
 		if c.vers >= VersionTLS12 {
 			if !isSupportedSignatureAlgorithm(certVerify.signatureAlgorithm, certReq.supportedSignatureAlgorithms) {
 				c.sendAlert(alertIllegalParameter)
@@ -867,7 +869,7 @@ func (c *Conn) processCertsFromClient(certificate Certificate) error {
 
 	if len(certs) > 0 {
 		switch certs[0].PublicKey.(type) {
-		case *ecdsa.PublicKey, *rsa.PublicKey, ed25519.PublicKey:
+		case *ecdsa.PublicKey, *rsa.PublicKey, ed25519.PublicKey, *sm2.PublicKey:
 		default:
 			c.sendAlert(alertUnsupportedCertificate)
 			return fmt.Errorf("tls: client certificate contains an unsupported public key of type %T", certs[0].PublicKey)
@@ -890,7 +892,7 @@ func newClientHelloInfo(ctx context.Context, c *Conn, clientHello *clientHelloMs
 		supportedVersions = supportedVersionsFromMax(clientHello.vers)
 	}
 
-	return toClientHelloInfo(&clientHelloInfo{
+	return &ClientHelloInfo{
 		CipherSuites:      clientHello.cipherSuites,
 		ServerName:        clientHello.serverName,
 		SupportedCurves:   clientHello.supportedCurves,
@@ -899,7 +901,7 @@ func newClientHelloInfo(ctx context.Context, c *Conn, clientHello *clientHelloMs
 		SupportedProtos:   clientHello.alpnProtocols,
 		SupportedVersions: supportedVersions,
 		Conn:              c.conn,
-		config:            toConfig(c.config),
+		config:            c.config,
 		ctx:               ctx,
-	})
+	}
 }

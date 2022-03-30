@@ -12,6 +12,7 @@ import (
 	"crypto/rsa"
 	"encoding/binary"
 	"errors"
+	"github.com/xiaotianfork/qtls-go1-18/x509"
 	"hash"
 	"sync/atomic"
 	"time"
@@ -503,7 +504,7 @@ func (hs *clientHandshakeStateTLS13) readServerCertificate() error {
 	if err != nil {
 		return c.sendAlert(alertInternalError)
 	}
-	if sigType == signaturePKCS1v15 || sigHash == crypto.SHA1 {
+	if sigType == signaturePKCS1v15 || sigHash == x509.SHA1 {
 		c.sendAlert(alertIllegalParameter)
 		return errors.New("tls: certificate used with invalid signature algorithm")
 	}
@@ -573,12 +574,12 @@ func (hs *clientHandshakeStateTLS13) sendClientCertificate() error {
 		return nil
 	}
 
-	cert, err := c.getClientCertificate(toCertificateRequestInfo(&certificateRequestInfo{
+	cert, err := c.getClientCertificate(&CertificateRequestInfo{
 		AcceptableCAs:    hs.certReq.certificateAuthorities,
 		SignatureSchemes: hs.certReq.supportedSignatureAlgorithms,
 		Version:          c.vers,
 		ctx:              hs.ctx,
-	}))
+	})
 	if err != nil {
 		return err
 	}
@@ -618,7 +619,7 @@ func (hs *clientHandshakeStateTLS13) sendClientCertificate() error {
 	signed := signedMessage(sigHash, clientSignatureContext, hs.transcript)
 	signOpts := crypto.SignerOpts(sigHash)
 	if sigType == signatureRSAPSS {
-		signOpts = &rsa.PSSOptions{SaltLength: rsa.PSSSaltLengthEqualsHash, Hash: sigHash}
+		signOpts = &rsa.PSSOptions{SaltLength: rsa.PSSSaltLengthEqualsHash, Hash: toCryptoHash(sigHash)}
 	}
 	sig, err := cert.PrivateKey.(crypto.Signer).Sign(c.config.rand(), signed, signOpts)
 	if err != nil {

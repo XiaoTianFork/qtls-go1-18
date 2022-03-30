@@ -12,9 +12,9 @@ import (
 	"crypto/ed25519"
 	"crypto/rsa"
 	"crypto/subtle"
-	"crypto/x509"
 	"errors"
 	"fmt"
+	"github.com/xiaotianfork/qtls-go1-18/sm2"
 	"hash"
 	"io"
 	"net"
@@ -22,6 +22,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/xiaotianfork/qtls-go1-18/x509"
 	"golang.org/x/crypto/cryptobyte"
 )
 
@@ -177,7 +178,7 @@ func (c *Conn) makeClientHello() (*clientHelloMsg, ecdheParameters, error) {
 
 func (c *Conn) clientHandshake(ctx context.Context) (err error) {
 	if c.config == nil {
-		c.config = fromConfig(defaultConfig())
+		c.config = defaultConfig()
 	}
 	c.setAlternativeRecordLayer()
 
@@ -701,7 +702,7 @@ func (hs *clientHandshakeState) doFullHandshake() error {
 		}
 
 		var sigType uint8
-		var sigHash crypto.Hash
+		var sigHash x509.Hash
 		if c.vers >= VersionTLS12 {
 			signatureAlgorithm, err := selectSignatureScheme(c.vers, chainToSend, certReq.supportedSignatureAlgorithms)
 			if err != nil {
@@ -725,7 +726,7 @@ func (hs *clientHandshakeState) doFullHandshake() error {
 		signed := hs.finishedHash.hashForClientCertificate(sigType, sigHash, hs.masterSecret)
 		signOpts := crypto.SignerOpts(sigHash)
 		if sigType == signatureRSAPSS {
-			signOpts = &rsa.PSSOptions{SaltLength: rsa.PSSSaltLengthEqualsHash, Hash: sigHash}
+			signOpts = &rsa.PSSOptions{SaltLength: rsa.PSSSaltLengthEqualsHash, Hash: toCryptoHash(sigHash)}
 		}
 		certVerify.signature, err = key.Sign(c.config.rand(), signed, signOpts)
 		if err != nil {
@@ -971,7 +972,7 @@ func (c *Conn) verifyServerCertificate(certificates [][]byte) error {
 	}
 
 	switch certs[0].PublicKey.(type) {
-	case *rsa.PublicKey, *ecdsa.PublicKey, ed25519.PublicKey:
+	case *rsa.PublicKey, *ecdsa.PublicKey, ed25519.PublicKey, *sm2.PublicKey:
 		break
 	default:
 		c.sendAlert(alertUnsupportedCertificate)
@@ -1000,7 +1001,7 @@ func (c *Conn) verifyServerCertificate(certificates [][]byte) error {
 // certificateRequestInfoFromMsg generates a CertificateRequestInfo from a TLS
 // <= 1.2 CertificateRequest, making an effort to fill in missing information.
 func certificateRequestInfoFromMsg(ctx context.Context, vers uint16, certReq *certificateRequestMsg) *CertificateRequestInfo {
-	cri := &certificateRequestInfo{
+	cri := &CertificateRequestInfo{
 		AcceptableCAs: certReq.certificateAuthorities,
 		Version:       vers,
 		ctx:           ctx,
@@ -1037,7 +1038,7 @@ func certificateRequestInfoFromMsg(ctx context.Context, vers uint16, certReq *ce
 				ECDSAWithP256AndSHA256, ECDSAWithP384AndSHA384, ECDSAWithP521AndSHA512,
 			}
 		}
-		return toCertificateRequestInfo(cri)
+		return cri
 	}
 
 	// Filter the signature schemes based on the certificate types.
@@ -1060,7 +1061,7 @@ func certificateRequestInfoFromMsg(ctx context.Context, vers uint16, certReq *ce
 		}
 	}
 
-	return toCertificateRequestInfo(cri)
+	return cri
 }
 
 func (c *Conn) getClientCertificate(cri *CertificateRequestInfo) (*Certificate, error) {
@@ -1083,7 +1084,7 @@ const clientSessionCacheKeyPrefix = "qtls-"
 
 // clientSessionCacheKey returns a key used to cache sessionTickets that could
 // be used to resume previously negotiated TLS sessions with a server.
-func clientSessionCacheKey(serverAddr net.Addr, config *config) string {
+func clientSessionCacheKey(serverAddr net.Addr, config *Config) string {
 	if len(config.ServerName) > 0 {
 		return clientSessionCacheKeyPrefix + config.ServerName
 	}

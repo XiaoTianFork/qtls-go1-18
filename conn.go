@@ -11,7 +11,6 @@ import (
 	"context"
 	"crypto/cipher"
 	"crypto/subtle"
-	"crypto/x509"
 	"errors"
 	"fmt"
 	"hash"
@@ -20,6 +19,8 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/xiaotianfork/qtls-go1-18/x509"
 )
 
 // A Conn represents a secured connection.
@@ -39,7 +40,7 @@ type Conn struct {
 	handshakeErr   error   // error resulting from handshake
 	vers           uint16  // TLS version
 	haveVers       bool    // version has been negotiated
-	config         *config // configuration passed to constructor
+	config         *Config // configuration passed to constructor
 	// handshakes counts the number of handshakes performed on the
 	// connection so far. If renegotiation is disabled then this is either
 	// zero or one.
@@ -64,11 +65,11 @@ type Conn struct {
 	ekm func(label string, context []byte, length int) ([]byte, error)
 	// For the client:
 	// resumptionSecret is the resumption_master_secret for handling
-	// NewSessionTicket messages. nil if config.SessionTicketsDisabled.
+	// NewSessionTicket messages. nil if Config.SessionTicketsDisabled.
 	// For the server:
 	// resumptionSecret is the resumption_master_secret for generating
 	// NewSessionTicket messages. Only used when the alternative record
-	// layer is set. nil if config.SessionTicketsDisabled.
+	// layer is set. nil if Config.SessionTicketsDisabled.
 	resumptionSecret []byte
 
 	// ticketKeys is the set of active session ticket keys for this

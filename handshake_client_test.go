@@ -8,7 +8,6 @@ import (
 	"bytes"
 	"context"
 	"crypto/rsa"
-	"crypto/x509"
 	"encoding/base64"
 	"encoding/binary"
 	"encoding/pem"
@@ -28,6 +27,7 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
+	"github.com/xiaotianfork/qtls-go1-18/x509"
 )
 
 // Note: see comment in handshake_test.go for details of how the reference
@@ -728,6 +728,15 @@ func TestHandshakeClientECDSATLS13(t *testing.T) {
 	runClientTestTLS13(t, test)
 }
 
+func TestHandshakeClientSM2TLS13(t *testing.T) {
+	test := &clientTest{
+		name: "Sm2",
+		cert: sm2LeafCertByte,
+		key:  sm2LeafPrivateKeyByte,
+	}
+	runClientTestTLS13(t, test)
+}
+
 func TestHandshakeClientEd25519(t *testing.T) {
 	test := &clientTest{
 		name: "Ed25519",
@@ -947,7 +956,7 @@ func testResumption(t *testing.T, version uint16, saveAppData bool) {
 	}
 	randomKey := func() [32]byte {
 		var k [32]byte
-		if _, err := io.ReadFull(fromConfig(serverConfig).rand(), k[:]); err != nil {
+		if _, err := io.ReadFull(serverConfig.rand(), k[:]); err != nil {
 			t.Fatalf("Failed to read new SessionTicketKey: %s", err)
 		}
 		return k
