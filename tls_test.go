@@ -1141,7 +1141,7 @@ func TestConnectionState(t *testing.T) {
 	now := func() time.Time { return time.Now() }
 
 	const alpnProtocol = "golang"
-	const serverName = ""
+	const serverName = "localhost"
 	var scts = [][]byte{[]byte("dummy sct 1"), []byte("dummy sct 2")}
 	var ocsp = []byte("dummy ocsp")
 
