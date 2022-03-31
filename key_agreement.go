@@ -13,7 +13,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/xiaotianfork/qtls-go1-18/x509"
+	"github.com/xiaotianfork/q-tls-common/x509"
 )
 
 // a keyAgreement implements the client and server side of a TLS key agreement

@@ -15,7 +15,7 @@ import (
 	"fmt"
 	"hash"
 
-	"github.com/xiaotianfork/qtls-go1-18/x509"
+	"github.com/xiaotianfork/q-tls-common/x509"
 )
 
 // Split a premaster secret in two as specified in RFC 4346, Section 5.

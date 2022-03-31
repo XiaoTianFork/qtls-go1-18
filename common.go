@@ -18,14 +18,14 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
-	"github.com/xiaotianfork/qtls-go1-18/sm2"
+	"github.com/xiaotianfork/q-tls-common/sm2"
 	"io"
 	"net"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/xiaotianfork/qtls-go1-18/x509"
+	"github.com/xiaotianfork/q-tls-common/x509"
 )
 
 const (

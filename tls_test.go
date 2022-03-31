@@ -21,7 +21,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/xiaotianfork/qtls-go1-18/x509"
+	"github.com/xiaotianfork/q-tls-common/x509"
 )
 
 var rsaCertPEM = `-----BEGIN CERTIFICATE-----

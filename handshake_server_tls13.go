@@ -16,7 +16,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/xiaotianfork/qtls-go1-18/x509"
+	"github.com/xiaotianfork/q-tls-common/x509"
 )
 
 // maxClientPSKIdentities is the number of client PSK identities the server will

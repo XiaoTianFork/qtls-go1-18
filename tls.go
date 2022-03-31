@@ -25,7 +25,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/xiaotianfork/qtls-go1-18/x509"
+	"github.com/xiaotianfork/q-tls-common/x509"
 )
 
 // Server returns a new TLS server side connection

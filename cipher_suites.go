@@ -13,8 +13,8 @@ import (
 	"crypto/sha1"
 	"crypto/sha256"
 	"fmt"
-	"github.com/xiaotianfork/qtls-go1-18/sm4"
-	"github.com/xiaotianfork/qtls-go1-18/x509"
+	"github.com/xiaotianfork/q-tls-common/sm4"
+	"github.com/xiaotianfork/q-tls-common/x509"
 	"hash"
 
 	"golang.org/x/crypto/chacha20poly1305"

@@ -16,8 +16,8 @@ import (
 	"hash"
 	"io"
 
-	"github.com/xiaotianfork/qtls-go1-18/sm2"
-	"github.com/xiaotianfork/qtls-go1-18/x509"
+	"github.com/xiaotianfork/q-tls-common/sm2"
+	"github.com/xiaotianfork/q-tls-common/x509"
 )
 
 // verifyHandshakeSignature verifies a signature against pre-hashed

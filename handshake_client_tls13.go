@@ -12,7 +12,7 @@ import (
 	"crypto/rsa"
 	"encoding/binary"
 	"errors"
-	"github.com/xiaotianfork/qtls-go1-18/x509"
+	"github.com/xiaotianfork/q-tls-common/x509"
 	"hash"
 	"sync/atomic"
 	"time"

@@ -27,7 +27,7 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
-	"github.com/xiaotianfork/qtls-go1-18/x509"
+	"github.com/xiaotianfork/q-tls-common/x509"
 )
 
 // Note: see comment in handshake_test.go for details of how the reference

@@ -12,7 +12,7 @@ import (
 	"io"
 	"math/big"
 
-	"github.com/xiaotianfork/qtls-go1-18/sm2"
+	"github.com/xiaotianfork/q-tls-common/sm2"
 	"golang.org/x/crypto/cryptobyte"
 	"golang.org/x/crypto/curve25519"
 	"golang.org/x/crypto/hkdf"
